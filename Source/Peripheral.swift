@@ -24,6 +24,8 @@ import Foundation
 import RxSwift
 import CoreBluetooth
 
+import RxCocoa // TODO: Remove on update to RxSwift > 3.0.0-beta1
+
 // swiftlint:disable line_length
 
 /**
@@ -31,7 +33,7 @@ import CoreBluetooth
  allowing to talk to peripheral like discovering characteristics, services and all of the read/write calls.
  */
 public class Peripheral {
-    let manager: BluetoothManager
+    fileprivate let manager: BluetoothManager
 
     init(manager: BluetoothManager, peripheral: RxPeripheralType) {
         self.manager = manager
@@ -44,6 +46,7 @@ public class Peripheral {
     /**
      Continuous value indicating if peripheral is in connected state. This is continuous value, which first emits `.Next` with current state, and later whenever state change occurs
      */
+    @available(*, renamed: "rx.isConnected")
     public var rx_isConnected: Observable<Bool> {
         return .deferred {
             let disconnected = self.manager.monitorDisconnection(for: self).map { _ in false }
@@ -539,4 +542,17 @@ extension Peripheral: Equatable { }
  */
 public func == (lhs: Peripheral, rhs: Peripheral) -> Bool {
     return lhs.peripheral == rhs.peripheral
+}
+
+// MARK: Reactive
+extension Peripheral: ReactiveCompatible { }
+
+extension Reactive where Base: Peripheral {
+    public var isConnected: Observable<Bool> {
+        return .deferred {
+            let disconnected = self.base.manager.monitorDisconnection(for: self.base).map { _ in false }
+            let connected = self.base.manager.monitorConnection(for: self.base).map { _ in true }
+            return Observable.of(disconnected, connected).merge().startWith(self.base.isConnected)
+        }
+    }
 }

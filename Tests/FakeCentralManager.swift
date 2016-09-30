@@ -28,6 +28,9 @@ import RxSwift
 import RxTests
 import CoreBluetooth
 
+import RxCocoa // TODO: Remove on update to RxSwift > 3.0.0-beta1
+
+
 class FakeCentralManager: RxCentralManagerType {
 
     var rx_didUpdateState: Observable<BluetoothState> = .never()
@@ -67,4 +70,14 @@ class FakeCentralManager: RxCentralManagerType {
         retrievePeripheralsWithIdentifiersTO?.onNext(identifiers)
         return retrievePeripheralsWithIdentifiersResult
     }
+}
+
+extension FakeCentralManager: ReactiveCompatible { }
+extension Reactive where Base: FakeCentralManager {
+    var didUpdateState: Observable<BluetoothState> { return base.rx_didUpdateState }
+    var willRestoreState: Observable<[String:Any]> { return base.rx_willRestoreState }
+    var didDiscoverPeripheral: Observable<(RxPeripheralType, [String:Any], NSNumber)> { return base.rx_didDiscoverPeripheral }
+    var didConnectPeripheral: Observable<RxPeripheralType> { return base.rx_didConnectPeripheral }
+    var didFailToConnectPeripheral: Observable<(RxPeripheralType, Error?)> { return base.rx_didFailToConnectPeripheral }
+    var didDisconnectPeripheral: Observable<(RxPeripheralType, Error?)> { return base.rx_didDisconnectPeripheral }
 }

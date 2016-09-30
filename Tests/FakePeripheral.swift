@@ -27,6 +27,8 @@ import RxTests
 @testable
 import RxBluetoothKit
 
+import RxCocoa // TODO: Remove on update to RxSwift > 3.0.0-beta1
+
 class FakePeripheral: RxPeripheralType {
 
 
@@ -106,4 +108,23 @@ class FakePeripheral: RxPeripheralType {
     func readRSSI() {
         readRSSITO?.onNext()
     }
+}
+
+extension FakePeripheral: ReactiveCompatible { }
+extension Reactive where Base: FakePeripheral {
+    var state: Observable<CBPeripheralState> { return base.rx_state }
+
+    var didUpdateName: Observable<String?> { return base.rx_didUpdateName }
+    var didModifyServices: Observable<[RxServiceType]> { return base.rx_didModifyServices }
+    var didReadRSSI: Observable<(Int, Error?)> { return base.rx_didReadRSSI }
+    var didDiscoverServices: Observable<([RxServiceType]?, Error?)> { return base.rx_didDiscoverServices }
+    var didDiscoverIncludedServicesForService: Observable<(RxServiceType, Error?)> { return base.rx_didDiscoverIncludedServicesForService }
+    var didDiscoverCharacteristicsForService: Observable<(RxServiceType, Error?)> { return base.rx_didDiscoverCharacteristicsForService }
+    var didUpdateValueForCharacteristic: Observable<(RxCharacteristicType, Error?)> { return base.rx_didUpdateValueForCharacteristic }
+    var didWriteValueForCharacteristic: Observable<(RxCharacteristicType, Error?)> { return base.rx_didWriteValueForCharacteristic }
+    var didUpdateNotificationStateForCharacteristic: Observable<(RxCharacteristicType, Error?)> { return base.rx_didUpdateNotificationStateForCharacteristic }
+    var didDiscoverDescriptorsForCharacteristic: Observable<(RxCharacteristicType, Error?)> { return base.rx_didDiscoverDescriptorsForCharacteristic }
+    var didUpdateValueForDescriptor: Observable<(RxDescriptorType, Error?)> { return base.rx_didUpdateValueForDescriptor }
+    var didWriteValueForDescriptor: Observable<(RxDescriptorType, Error?)> { return base.rx_didWriteValueForDescriptor }
+
 }

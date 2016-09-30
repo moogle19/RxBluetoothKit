@@ -24,6 +24,7 @@ import Foundation
 import RxSwift
 import CoreBluetooth
 
+import RxCocoa
 /**
  Protocol which wraps bluetooth peripheral.
  */

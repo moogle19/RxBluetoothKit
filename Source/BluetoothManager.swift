@@ -24,6 +24,8 @@ import Foundation
 import RxSwift
 import CoreBluetooth
 
+import RxCocoa // TODO: Remove on update to RxSwift > 3.0.0-beta1
+
 // swiftlint:disable line_length
 
 /**
@@ -49,7 +51,7 @@ import CoreBluetooth
 public class BluetoothManager {
 
     /// Implementation of Central Manager
-    private let centralManager: RxCentralManagerType
+    fileprivate let centralManager: RxCentralManagerType
 
     /// Queue on which all observables are serialised if needed
     private let subscriptionQueue: SerializedSubscriptionQueue
@@ -199,10 +201,9 @@ public class BluetoothManager {
      - returns: Observable that emits `Next` immediately after subscribtion with current state of Bluetooth. Later,
      whenever state changes events are emitted. Observable is infinite : doesn't generate `Complete`.
      */
+    @available(*, renamed: "rx.state")
     public var rx_state: Observable<BluetoothState> {
-        return .deferred {
-            return self.centralManager.rx_didUpdateState.startWith(self.centralManager.state)
-        }
+        return rx.state
     }
 
     /**
@@ -406,4 +407,19 @@ public class BluetoothManager {
             .map { RestoredState(restoredStateDictionary: $0, bluetoothManager: self) }
     }
     #endif
+}
+
+extension BluetoothManager: ReactiveCompatible { }
+extension Reactive where Base:BluetoothManager {
+    /**
+     Continuous state of `BluetoothManager` instance described by `BluetoothState` which is equivalent to  [`CBManagerState`](https://developer.apple.com/reference/corebluetooth/cbmanager/1648600-state).
+     
+     - returns: Observable that emits `Next` immediately after subscribtion with current state of Bluetooth. Later,
+     whenever state changes events are emitted. Observable is infinite : doesn't generate `Complete`.
+     */
+    public var state: Observable<BluetoothState> {
+        return .deferred {
+            return self.base.centralManager.rx_didUpdateState.startWith(self.base.centralManager.state)
+        }
+    }
 }

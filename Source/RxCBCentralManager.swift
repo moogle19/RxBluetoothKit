@@ -24,6 +24,8 @@ import Foundation
 import RxSwift
 import CoreBluetooth
 
+import RxCocoa // TODO: Remove on update to RxSwift > 3.0.0-beta1
+
 /**
  Core Bluetooth implementation of RxCentralManagerType. This is a lightweight wrapper which allows
  to hide all implementation details.
@@ -31,7 +33,7 @@ import CoreBluetooth
 class RxCBCentralManager: RxCentralManagerType {
 
     private let centralManager: CBCentralManager
-    private let internalDelegate = InternalDelegate()
+    fileprivate let internalDelegate = InternalDelegate()
 
     /**
      Create Core Bluetooth implementation of RxCentralManagerType which is used by BluetoothManager class.
@@ -86,26 +88,32 @@ class RxCBCentralManager: RxCentralManagerType {
     }
 
     /// Observable which infroms when central manager did change its state
+    @available(*, renamed: "rx.didUpdateState")
     var rx_didUpdateState: Observable<BluetoothState> {
         return internalDelegate.didUpdateStateSubject
     }
     /// Observable which infroms when central manager is about to restore its state
+    @available(*, renamed: "rx.willRestoreState")
     var rx_willRestoreState: Observable<[String: Any]> {
         return internalDelegate.willRestoreStateSubject
     }
     /// Observable which infroms when central manage discovered peripheral
+    @available(*, renamed: "rx.didDiscoverPeripheral")
     var rx_didDiscoverPeripheral: Observable<(RxPeripheralType, [String: Any], NSNumber)> {
         return internalDelegate.didDiscoverPeripheralSubject
     }
     /// Observable which infroms when central manager connected to peripheral
+    @available(*, renamed: "rx.didConnectPeripheral")
     var rx_didConnectPeripheral: Observable<RxPeripheralType> {
         return internalDelegate.didConnectPerihperalSubject
     }
     /// Observable which infroms when central manager failed to connect to peripheral
+    @available(*, renamed: "didFailToConnectPeripheral")
     var rx_didFailToConnectPeripheral: Observable<(RxPeripheralType, Error?)> {
         return internalDelegate.didFailToConnectPeripheralSubject
     }
     /// Observable which infroms when central manager disconnected from peripheral
+    @available(*, renamed: "rx.didDisconnectPeripheral")
     var rx_didDisconnectPeripheral: Observable<(RxPeripheralType, Error?)> {
         return internalDelegate.didDisconnectPeripheral
     }
@@ -177,4 +185,33 @@ class RxCBCentralManager: RxCentralManagerType {
             RxCBPeripheral(peripheral: $0)
         })
     }
+}
+
+extension RxCBCentralManager: ReactiveCompatible { }
+extension Reactive where Base:RxCBCentralManager {
+    /// Observable which infroms when central manager did change its state
+    var didUpdateState: Observable<BluetoothState> {
+        return base.internalDelegate.didUpdateStateSubject
+    }
+    /// Observable which infroms when central manager is about to restore its state
+    var willRestoreState: Observable<[String: Any]> {
+        return base.internalDelegate.willRestoreStateSubject
+    }
+    /// Observable which infroms when central manage discovered peripheral
+    var didDiscoverPeripheral: Observable<(RxPeripheralType, [String: Any], NSNumber)> {
+        return base.internalDelegate.didDiscoverPeripheralSubject
+    }
+    /// Observable which infroms when central manager connected to peripheral
+    var didConnectPeripheral: Observable<RxPeripheralType> {
+        return base.internalDelegate.didConnectPerihperalSubject
+    }
+    /// Observable which infroms when central manager failed to connect to peripheral
+    var didFailToConnectPeripheral: Observable<(RxPeripheralType, Error?)> {
+        return base.internalDelegate.didFailToConnectPeripheralSubject
+    }
+    /// Observable which infroms when central manager disconnected from peripheral
+    var didDisconnectPeripheral: Observable<(RxPeripheralType, Error?)> {
+        return base.internalDelegate.didDisconnectPeripheral
+    }
+
 }

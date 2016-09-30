@@ -24,6 +24,8 @@ import Foundation
 import CoreBluetooth
 import RxSwift
 
+import RxCocoa // TODO: Remove on update to RxSwift > 3.0.0-beta1
+
 /**
  Core Bluetooth implementation of RxPeripheralType. This is a lightweight wrapper which allows
  to hide all implementation details.
@@ -31,7 +33,7 @@ import RxSwift
 class RxCBPeripheral: RxPeripheralType {
 
     let peripheral: CBPeripheral
-    private let internalDelegate: InternalPeripheralDelegate
+    fileprivate let internalDelegate: InternalPeripheralDelegate
 
     init(peripheral: CBPeripheral) {
         self.peripheral = peripheral
@@ -63,63 +65,75 @@ class RxCBPeripheral: RxPeripheralType {
     }
 
     /// Observable which emits peripheral's name changes
+    @available(*, renamed: "rx.didUpdateName")
     var rx_didUpdateName: Observable<String?> {
-        return internalDelegate.peripheralDidUpdateNameSubject
+        return rx.didUpdateName
     }
 
     /// Observable which emits when service's are modified
+    @available(*, renamed: "rx.didModifyServices")
     var rx_didModifyServices: Observable<([RxServiceType])> {
-        return internalDelegate.peripheralDidModifyServicesSubject
+        return rx.didModifyServices
     }
 
     /// Observable which emits when RSSI was read
+    @available(*, renamed: "rx.didReadRSSI")
     var rx_didReadRSSI: Observable<(Int, Error?)> {
-        return internalDelegate.peripheralDidReadRSSISubject
+        return rx.didReadRSSI
     }
 
     /// Observable which emits discovered serivices during discovery
+    @available(*, renamed: "rx.didDiscoverServices")
     var rx_didDiscoverServices: Observable<([RxServiceType]?, Error?)> {
-        return internalDelegate.peripheralDidDiscoverServicesSubject
+        return rx.didDiscoverServices
     }
 
     /// Observable which emits service for which included services were discovered
+    @available(*, renamed: "rx.didDiscoverIncludedServicesForService")
     var rx_didDiscoverIncludedServicesForService: Observable<(RxServiceType, Error?)> {
-        return internalDelegate.peripheralDidDiscoverIncludedServicesForServiceSubject
+        return rx.didDiscoverIncludedServicesForService
     }
 
     /// Observable which emits service for which characteristics were discovered
+    @available(*, renamed: "rx.didDiscoverCharacteristicsForService")
     var rx_didDiscoverCharacteristicsForService: Observable<(RxServiceType, Error?)> {
-        return internalDelegate.peripheralDidDiscoverCharacteristicsForServiceSubject
+        return rx.didDiscoverCharacteristicsForService
     }
 
     /// Observable which emits characteristic which value has been updated
+    @available(*, renamed: "rx.didUpdateValueForCharacteristic")
     var rx_didUpdateValueForCharacteristic: Observable<(RxCharacteristicType, Error?)> {
-        return internalDelegate.peripheralDidUpdateValueForCharacteristicSubject
+        return rx.didUpdateValueForCharacteristic
     }
 
     /// Observable which emits characteristic for which value was written successfully
+    @available(*, renamed: "rx.didWriteValueForCharacteristic")
     var rx_didWriteValueForCharacteristic: Observable<(RxCharacteristicType, Error?)> {
-        return internalDelegate.peripheralDidWriteValueForCharacteristicSubject
+        return rx.didWriteValueForCharacteristic
     }
 
     /// Observable which emits characteristic which notification value was successfully modified
+    @available(*, renamed: "rx.didUpdateNotificationStateForCharacteristic")
     var rx_didUpdateNotificationStateForCharacteristic: Observable<(RxCharacteristicType, Error?)> {
-        return internalDelegate.peripheralDidUpdateNotificationStateForCharacteristicSubject
+        return rx.didUpdateNotificationStateForCharacteristic
     }
 
     /// Observable which emits characteristic for which descriptors were discovered
+    @available(*, renamed: "rx.didDiscoverDescriptorsForCharacteristic")
     var rx_didDiscoverDescriptorsForCharacteristic: Observable<(RxCharacteristicType, Error?)> {
-        return internalDelegate.peripheralDidDiscoverDescriptorsForCharacteristicSubject
+        return rx.didDiscoverDescriptorsForCharacteristic
     }
 
     /// Observable which emits descriptor which value was updated
+    @available(*, renamed: "rx.didUpdateValueForDescriptor")
     var rx_didUpdateValueForDescriptor: Observable<(RxDescriptorType, Error?)> {
-        return internalDelegate.peripheralDidUpdateValueForDescriptorSubject
+        return rx.didUpdateValueForDescriptor
     }
 
     /// Observable which emits descriptor which completed sucessfully its write operation
+    @available(*, renamed: "rx.didWriteValueForDescriptor")
     var rx_didWriteValueForDescriptor: Observable<(RxDescriptorType, Error?)> {
-        return internalDelegate.peripheralDidWriteValueForDescriptorSubject
+        return rx.didWriteValueForDescriptor
     }
 
     /**
@@ -364,5 +378,68 @@ class RxCBPeripheral: RxPeripheralType {
         } else {
             fatalError("Implementation error: internal delegate for CBPeripheral is cached in memory")
         }
+    }
+}
+
+extension RxCBPeripheral: ReactiveCompatible { }
+extension Reactive where Base: RxCBPeripheral {
+    
+    /// Observable which emits peripheral's name changes
+    var didUpdateName: Observable<String?> {
+        return base.internalDelegate.peripheralDidUpdateNameSubject
+    }
+    
+    /// Observable which emits when service's are modified
+    var didModifyServices: Observable<([RxServiceType])> {
+        return base.internalDelegate.peripheralDidModifyServicesSubject
+    }
+    /// Observable which emits when RSSI was read
+    var didReadRSSI: Observable<(Int, Error?)> {
+        return base.internalDelegate.peripheralDidReadRSSISubject
+    }
+    
+    /// Observable which emits discovered serivices during discovery
+    var didDiscoverServices: Observable<([RxServiceType]?, Error?)> {
+        return base.internalDelegate.peripheralDidDiscoverServicesSubject
+    }
+    
+    /// Observable which emits service for which included services were discovered
+    var didDiscoverIncludedServicesForService: Observable<(RxServiceType, Error?)> {
+        return base.internalDelegate.peripheralDidDiscoverIncludedServicesForServiceSubject
+    }
+    
+    /// Observable which emits service for which characteristics were discovered
+    var didDiscoverCharacteristicsForService: Observable<(RxServiceType, Error?)> {
+        return base.internalDelegate.peripheralDidDiscoverCharacteristicsForServiceSubject
+    }
+    
+    /// Observable which emits characteristic which value has been updated
+    var didUpdateValueForCharacteristic: Observable<(RxCharacteristicType, Error?)> {
+        return base.internalDelegate.peripheralDidUpdateValueForCharacteristicSubject
+    }
+    
+    /// Observable which emits characteristic for which value was written successfully
+    var didWriteValueForCharacteristic: Observable<(RxCharacteristicType, Error?)> {
+        return base.internalDelegate.peripheralDidWriteValueForCharacteristicSubject
+    }
+    
+    /// Observable which emits characteristic which notification value was successfully modified
+    var didUpdateNotificationStateForCharacteristic: Observable<(RxCharacteristicType, Error?)> {
+        return base.internalDelegate.peripheralDidUpdateNotificationStateForCharacteristicSubject
+    }
+    
+    /// Observable which emits characteristic for which descriptors were discovered
+    var didDiscoverDescriptorsForCharacteristic: Observable<(RxCharacteristicType, Error?)> {
+        return base.internalDelegate.peripheralDidDiscoverDescriptorsForCharacteristicSubject
+    }
+    
+    /// Observable which emits descriptor which value was updated
+    var didUpdateValueForDescriptor: Observable<(RxDescriptorType, Error?)> {
+        return base.internalDelegate.peripheralDidUpdateValueForDescriptorSubject
+    }
+    
+    /// Observable which emits descriptor which completed sucessfully its write operation
+    var didWriteValueForDescriptor: Observable<(RxDescriptorType, Error?)> {
+        return base.internalDelegate.peripheralDidWriteValueForDescriptorSubject
     }
 }

@@ -24,11 +24,13 @@ import Foundation
 import RxSwift
 import CoreBluetooth
 
+import RxCocoa // TODO: Remove on update to RxSwift > 3.0.0-beta1
+
 /**
  Protocol which wraps Central Manager for bluetooth devices. It is used directly by BluetoothManager
 */
 protocol RxCentralManagerType {
-
+    
     /// Observable which emits state changes of central manager after subscriptions
     var rx_didUpdateState: Observable<BluetoothState> { get }
     /// Observable which emits elements after subsciption when central manager want to restore its state
