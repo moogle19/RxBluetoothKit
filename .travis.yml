@@ -17,4 +17,10 @@ before_deploy:
         - carthage archive $FRAMEWORK_NAME
 script:
         - set -o pipefail && xcodebuild test -project RxBluetoothKit.xcodeproj -scheme "RxBluetoothKit iOS" -sdk iphonesimulator10.0 -destination "platform=iOS Simulator,OS=10.0,name=iPhone 7 Plus" ONLY_ACTIVE_ARCH=NO | xcpretty
-
+deploy:
+  provider: releases
+  api_key:
+    secure: TD1am09S6TbwFuaRuAUG/paKVbqZXCxVHYD/0KjxqT4jTyiPr2GdgoS+m2QKTRnGVWXKNY8D76/9I/tZ5Ypt+LL/DMqgXmMA663dlnDfXV9Sml0INulxpO/Kh7dDWWpkAr24TzvhteEDRz389M6kyc9vFfreZfvvqbfcW4zLU8qpKzekR9xSDs/oIDu8mxZjFFicQJA+m4LYPorgCh+ht3y4amBunkHDtAM4O2iyhJ409PDAOxQUxJqqvhLz15UuQ9uN5gM1L+7SnUd8tFEHTDVHnkLTMeenRY7zXvpl/E/Ixvsc8+fE7YWBwCg91OyAxzrY7dGT5s+hNKlzD72JHPFNRzyJ94wTl0tI86I2GkPUnmm1qLtNIuNmo8QyN3yC7vQjyraU0ob9mZQascKT5Z+HSN5iXkb/i7h5hp1D7P7PLGSosmdgYdh5o4DHSOT92p4zUdBeRCUHpGBT+aJdY1mxvFIByTIociUgLUV9i2tidlZc9NwHQ46kHYb8fobzHwJnArgTxvSRShWkaLhahxU2Qdr35jq4XNDTYTwEAc+cz5sD/MVi+iO8EWeP7D7PGXJHq03sbt5tnLPgT0NcYpm/bxJHUuFx0hfUB3kHURp20qUhaZ/HNUNbgRFpGcCiDCovVssvsfh4eaZBMgBLgWAEgk6cJgAEpa2h4MsgJdw=
+  file: RxBluetoothKit.framework.zip
+  on:
+    repo: moogle19/RxBluetoothKit
