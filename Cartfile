@@ -1,2 +1,2 @@
-github "moogle19/RxSwift" "3.0.0"
+github "zahlz/RxSwift" ~> 2.9
 
