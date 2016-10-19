@@ -25,3 +25,7 @@ Carthage/Checkouts
 Carthage/Build
 .idea
 Podfile.lock
+
+# Swift Package Manager
+.build
+Packages
