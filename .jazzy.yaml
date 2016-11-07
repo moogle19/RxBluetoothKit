@@ -3,9 +3,6 @@ module: RxBluetoothKit
 author_url: https://polidea.com
 author: Polidea
 author_name: Polidea
-swift_version: 2.2
 clean: true
 output: Documentation
 
-podspec: RxBluetoothKit.podspec
-swift_version: 2.2
