@@ -22,31 +22,23 @@
 
 import Foundation
 import CoreBluetooth
+import RxSwift
 
-class RxCBDescriptor: RxDescriptorType {
-
-    let descriptor: CBDescriptor
-
-    init(descriptor: CBDescriptor) {
-        self.descriptor = descriptor
+extension CBCharacteristic: RxCharacteristicType {
+    func isEqualTo(characteristic: RxCharacteristicType) -> Bool {
+        guard let c = characteristic as? CBCharacteristic else { return false }
+        return c.isEqual(self)
     }
-
-    @available(*, deprecated)
+    
+    var descriptors: [RxDescriptorType]? {
+        return self.descriptors
+    }
+    
+    var service: RxServiceType {
+        return self.service
+    }
+    
     var objectId: UInt {
-        return UInt(bitPattern: ObjectIdentifier(descriptor))
-    }
-    var uuid: CBUUID {
-        return descriptor.uuid
-    }
-    var characteristic: RxCharacteristicType {
-        return RxCBCharacteristic(characteristic: descriptor.characteristic)
-    }
-    var value: Any? {
-        return descriptor.value
-    }
-
-    func isEqualTo(descriptor: RxDescriptorType) -> Bool {
-        guard let rhs = descriptor as? RxCBDescriptor else { return false }
-        return self.descriptor === rhs.descriptor
+        return UInt(bitPattern: ObjectIdentifier(self))
     }
 }

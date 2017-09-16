@@ -74,9 +74,8 @@ public struct RestoredState {
         let objects = restoredStateData[CBCentralManagerRestoredStateScanServicesKey] as? [AnyObject]
         guard let arrayOfAnyObjects = objects else { return [] }
         return arrayOfAnyObjects.flatMap { $0 as? CBService }
-            .map(RxCBService.init)
             .map { Service(peripheral: Peripheral(manager: bluetoothManager,
-                peripheral: RxCBPeripheral(peripheral: $0.service.peripheral)), service: $0) }
+                peripheral: RxCBPeripheral(peripheral: $0.peripheral)), service: $0) }
     }
 }
 #endif

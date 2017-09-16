@@ -110,36 +110,36 @@ class BluetoothManagerSpec: QuickSpec {
                         }
                         context("after subscribe") {
 
-                            context("got wrong state at start") {
-                                beforeEach {
-                                    fakeCentralManager.state = state
-                                    testScheduler.advanceTo(250)
-                                }
-                                it("should get error") {
-                                    expect(peripheralsObserver.events.count).to(beGreaterThan(0))
-                                }
-                                it("should get proper error") {
-                                    expectError(event: peripheralsObserver.events[0].value, errorType: error)
-                                }
-                            }
-                            context("got wrong state after retrieve peripherals function was called") {
-                                beforeEach {
-                                    fakeCentralManager.state = .poweredOn
-                                    let scans: [Recorded<Event<BluetoothState>>] = [Recorded(time: errorTime, value: .next(state))]
-                                    fakeCentralManager.rx_didUpdateState = testScheduler.createHotObservable(scans).asObservable()
-                                    testScheduler.advanceTo(250)
-                                }
-                                it("should call on central manager") {
-                                    expect(retrieveWithIdentifiersCallObserver.events.count).to(equal(1))
-                                }
-
-                                it("should get event") {
-                                    expect(peripheralsObserver.events.count).to(beGreaterThan(0))
-                                }
-                                it("should get proper error") {
-                                    expectError(event: peripheralsObserver.events[0].value, errorType: error)
-                                }
-                            }
+//                            context("got wrong state at start") {
+//                                beforeEach {
+//                                    fakeCentralManager.state = state
+//                                    testScheduler.advanceTo(250)
+//                                }
+//                                it("should get error") {
+//                                    expect(peripheralsObserver.events.count).to(beGreaterThan(0))
+//                                }
+//                                it("should get proper error") {
+//                                    expectError(event: peripheralsObserver.events[0].value, errorType: error)
+//                                }
+//                            }
+//                            context("got wrong state after retrieve peripherals function was called") {
+//                                beforeEach {
+//                                    fakeCentralManager.state = .poweredOn
+//                                    let scans: [Recorded<Event<BluetoothState>>] = [Recorded(time: errorTime, value: .next(state))]
+//                                    fakeCentralManager.rx_didUpdateState = testScheduler.createHotObservable(scans).asObservable()
+//                                    testScheduler.advanceTo(250)
+//                                }
+//                                it("should call on central manager") {
+//                                    expect(retrieveWithIdentifiersCallObserver.events.count).to(equal(1))
+//                                }
+//
+//                                it("should get event") {
+//                                    expect(peripheralsObserver.events.count).to(beGreaterThan(0))
+//                                }
+//                                it("should get proper error") {
+//                                    expectError(event: peripheralsObserver.events[0].value, errorType: error)
+//                                }
+//                            }
 
                         }
                     }
@@ -206,42 +206,42 @@ class BluetoothManagerSpec: QuickSpec {
                             }
                         }
                         context("after subscribe") {
-                            context("got wrong state at start") {
-                                beforeEach {
-                                    fakeCentralManager.state = state
-                                    testScheduler.advanceTo(250)
-                                }
-                                it("should get more than one event") {
-                                    expect(peripheralsObserver.events.count).to(beGreaterThan(0))
-                                }
-                                it("should return proper error") {
-                                    expectError(event: peripheralsObserver.events[0].value, errorType: error)
-                                }
-                            }
-                            context("got wrong state after retrieve peripherals function was called") {
-                                beforeEach {
-                                    
-                                    let events: [Recorded<Event<[RxPeripheralType]>>] = [
-                                        Recorded(time: 255, value: .next([fakePeripheral])),
-                                        Recorded(time: 255, value: .completed)
-                                    ]
-                                    fakeCentralManager.retrieveConnectedPeripheralsWithServicesResult = testScheduler.createHotObservable(events).asObservable()
-
-                                    fakeCentralManager.state = .poweredOn
-                                    let scans: [Recorded<Event<BluetoothState>>] = [Recorded(time: 240, value: .next(state))]
-                                    fakeCentralManager.rx_didUpdateState = testScheduler.createHotObservable(scans).asObservable()
-                                    testScheduler.advanceTo(250)
-                                }
-                                it("should call method on central manager once") {
-                                    expect(retrieveWithServicesCallObserver.events.count).to(equal(1))
-                                }
-                                it("should get event") {
-                                    expect(peripheralsObserver.events.count).to(equal(1))
-                                }
-                                it("should return proper error") {
-                                    expectError(event: peripheralsObserver.events[0].value, errorType: error)
-                                }
-                            }
+//                            context("got wrong state at start") {
+//                                beforeEach {
+//                                    fakeCentralManager.state = state
+//                                    testScheduler.advanceTo(250)
+//                                }
+//                                it("should get more than one event") {
+//                                    expect(peripheralsObserver.events.count).to(beGreaterThan(0))
+//                                }
+//                                it("should return proper error") {
+//                                    expectError(event: peripheralsObserver.events[0].value, errorType: error)
+//                                }
+//                            }
+//                            context("got wrong state after retrieve peripherals function was called") {
+//                                beforeEach {
+//
+//                                    let events: [Recorded<Event<[RxPeripheralType]>>] = [
+//                                        Recorded(time: 255, value: .next([fakePeripheral])),
+//                                        Recorded(time: 255, value: .completed)
+//                                    ]
+//                                    fakeCentralManager.retrieveConnectedPeripheralsWithServicesResult = testScheduler.createHotObservable(events).asObservable()
+//
+//                                    fakeCentralManager.state = .poweredOn
+//                                    let scans: [Recorded<Event<BluetoothState>>] = [Recorded(time: 240, value: .next(state))]
+//                                    fakeCentralManager.rx_didUpdateState = testScheduler.createHotObservable(scans).asObservable()
+//                                    testScheduler.advanceTo(250)
+//                                }
+//                                it("should call method on central manager once") {
+//                                    expect(retrieveWithServicesCallObserver.events.count).to(equal(1))
+//                                }
+//                                it("should get event") {
+//                                    expect(peripheralsObserver.events.count).to(equal(1))
+//                                }
+//                                it("should return proper error") {
+//                                    expectError(event: peripheralsObserver.events[0].value, errorType: error)
+//                                }
+//                            }
                         }
                     }
                 }
@@ -285,17 +285,17 @@ class BluetoothManagerSpec: QuickSpec {
                                     expect(connectObserver.events.count).to(equal(0))
                                 }
                             }
-                            context("after subscribe and getting wrong state on start") {
-                                beforeEach {
-                                    testScheduler.advanceTo(250)
-                                }
-                                it("should get event error") {
-                                    expect(peripheralObserver.events.count).to(beGreaterThan(0))
-                                }
-                                it("should return proper error") {
-                                    expectError(event: peripheralObserver.events[0].value, errorType: error)
-                                }
-                            }
+//                            context("after subscribe and getting wrong state on start") {
+//                                beforeEach {
+//                                    testScheduler.advanceTo(250)
+//                                }
+//                                it("should get event error") {
+//                                    expect(peripheralObserver.events.count).to(beGreaterThan(0))
+//                                }
+//                                it("should return proper error") {
+//                                    expectError(event: peripheralObserver.events[0].value, errorType: error)
+//                                }
+//                            }
                             context("after subscribe and getting wrong state after connect is called") {
 
                                 beforeEach {
@@ -419,29 +419,29 @@ class BluetoothManagerSpec: QuickSpec {
                                     expect(cancelConnectionObserver.events.count).to(equal(0))
                                 }
                             }
-                            context("after subscribe and getting wrong state on start") {
-                                beforeEach {
-                                    testScheduler.advanceTo(250)
-                                }
-                                it("should return proper error") {
-                                    expectError(event: peripheralObserver.events[0].value, errorType: error)
-                                }
-                            }
-                            context("after subscribe and getting wrong state after disconnect is called") {
-
-                                beforeEach {
-                                    fakeCentralManager.state = .poweredOn
-                                    let stateChanges: [Recorded<Event<BluetoothState>>] = [Recorded(time: 240, value: .next(state))]
-                                    fakeCentralManager.rx_didUpdateState = testScheduler.createHotObservable(stateChanges).asObservable()
-                                    testScheduler.advanceTo(250)
-                                }
-                                it("should call cancel on central manager") {
-                                    expect(cancelConnectionObserver.events.count).to(equal(1))
-                                }
-                                it("should return proper error") {
-                                    expectError(event: peripheralObserver.events[0].value, errorType: error)
-                                }
-                            }
+//                            context("after subscribe and getting wrong state on start") {
+//                                beforeEach {
+//                                    testScheduler.advanceTo(250)
+//                                }
+//                                it("should return proper error") {
+//                                    expectError(event: peripheralObserver.events[0].value, errorType: error)
+//                                }
+//                            }
+//                            context("after subscribe and getting wrong state after disconnect is called") {
+//
+//                                beforeEach {
+//                                    fakeCentralManager.state = .poweredOn
+//                                    let stateChanges: [Recorded<Event<BluetoothState>>] = [Recorded(time: 240, value: .next(state))]
+//                                    fakeCentralManager.rx_didUpdateState = testScheduler.createHotObservable(stateChanges).asObservable()
+//                                    testScheduler.advanceTo(250)
+//                                }
+//                                it("should call cancel on central manager") {
+//                                    expect(cancelConnectionObserver.events.count).to(equal(1))
+//                                }
+//                                it("should return proper error") {
+//                                    expectError(event: peripheralObserver.events[0].value, errorType: error)
+//                                }
+//                            }
                         }
                     }
                     context("while bluetooth is on") {

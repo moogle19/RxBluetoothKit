@@ -100,8 +100,7 @@ public class BluetoothManager {
      */
     convenience public init(queue: DispatchQueue = .main,
                             options: [String: AnyObject]? = nil) {
-        self.init(centralManager: RxCBCentralManager(queue: queue, options: options),
-            queueScheduler: ConcurrentDispatchQueueScheduler(queue: queue))
+        self.init(centralManager: CBCentralManager.init(delegate: nil, queue: queue, options: options), queueScheduler: ConcurrentDispatchQueueScheduler(queue: queue))
     }
 
     // MARK: Scanning
@@ -210,7 +209,7 @@ public class BluetoothManager {
      */
     public var rx_state: Observable<BluetoothState> {
         return .deferred {
-            return self.centralManager.rx_didUpdateState.startWith(self.centralManager.state)
+            return self.centralManager.rx_didUpdateState//.startWith(self.centralManager.state)
         }
     }
 
@@ -220,9 +219,9 @@ public class BluetoothManager {
      - returns: Current state of `BluetoothManager` as `BluetoothState`.
      */
 
-    public var state: BluetoothState {
-        return centralManager.state
-    }
+//    public var state: BluetoothState {
+//        return centralManager.state
+//    }
     // MARK: Peripheral's Connection Management
 
     /**
@@ -254,10 +253,10 @@ public class BluetoothManager {
                 }
 
             let observable = Observable<Peripheral>.create { observer in
-                if let error = BluetoothError(state: self.centralManager.state) {
-                    observer.onError(error)
-                    return Disposables.create()
-                }
+//                if let error = BluetoothError(state: self.centralManager.state) {
+//                    observer.onError(error)
+//                    return Disposables.create()
+//                }
 
                 guard !peripheral.isConnected else {
                     observer.onNext(peripheral)

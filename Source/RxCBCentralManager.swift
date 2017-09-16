@@ -22,171 +22,108 @@
 
 import Foundation
 import RxSwift
+import RxCocoa
 import CoreBluetooth
 
-/**
- Core Bluetooth implementation of RxCentralManagerType. This is a lightweight wrapper which allows
- to hide all implementation details.
- */
-class RxCBCentralManager: RxCentralManagerType {
+class RxCBCentralManagerDelegateProxy: DelegateProxy, CBCentralManagerDelegate, DelegateProxyType {
+    func centralManagerDidUpdateState(_ central: CBCentralManager) {
+        self.forwardToDelegate()?.centralManagerDidUpdateState(central)
+    }
+    
+    static var factory = DelegateProxyFactory { (parentObject: CBCentralManager) in
+        RxCBCentralManagerDelegateProxy(parentObject: parentObject)
+    }
+    
+    static func currentDelegateFor(_ object: AnyObject) -> AnyObject? {
+        let centralManager = object as! CBCentralManager
+        return centralManager.delegate
+    }
+    
+    static func setCurrentDelegate(_ delegate: AnyObject?, toObject object: AnyObject) {
+        let centralManager = object as! CBCentralManager
+        centralManager.delegate = delegate as? CBCentralManagerDelegate
+    }
+}
 
-    let centralManager: CBCentralManager
-    private let internalDelegate = InternalDelegate()
-
-    /**
-     Unique identifier of an object. Should be removed in 4.0
-     */
-    @available(*, deprecated)
+extension CBCentralManager: RxCentralManagerType {
     var objectId: UInt {
         return UInt(bitPattern: ObjectIdentifier(centralManager))
     }
-
-    /**
-     Create Core Bluetooth implementation of RxCentralManagerType which is used by BluetoothManager class.
-     User can specify on which thread all bluetooth events are collected.
-
-     - parameter queue: Dispatch queue on which callbacks are received.
-     */
-    init(queue: DispatchQueue, options: [String: AnyObject]? = nil) {
-        centralManager = CBCentralManager(delegate: internalDelegate, queue: queue, options: options)
+    
+    var rx_delegate: DelegateProxy {
+        return DelegateProxy(parentObject: RxCBCentralManagerDelegateProxy.self)
     }
-
-    @objc private class InternalDelegate: NSObject, CBCentralManagerDelegate {
-        let didUpdateStateSubject = PublishSubject<BluetoothState>()
-        let willRestoreStateSubject = PublishSubject<[String: Any]>()
-        let didDiscoverPeripheralSubject = PublishSubject<(RxPeripheralType, [String: Any], NSNumber)>()
-        let didConnectPerihperalSubject = PublishSubject<RxPeripheralType>()
-        let didFailToConnectPeripheralSubject = PublishSubject<(RxPeripheralType, Error?)>()
-        let didDisconnectPeripheral = PublishSubject<(RxPeripheralType, Error?)>()
-
-        @objc func centralManagerDidUpdateState(_ central: CBCentralManager) {
-            guard let bleState = BluetoothState(rawValue: central.state.rawValue) else { return }
-            RxBluetoothKitLog.d("\(central.logDescription) didUpdateState(state: \(bleState.logDescription))")
-            didUpdateStateSubject.onNext(bleState)
-        }
-
-        @objc func centralManager(_ central: CBCentralManager, willRestoreState dict: [String: Any]) {
-            RxBluetoothKitLog.d("\(central.logDescription) willRestoreState(restoredState: \(dict))")
-            willRestoreStateSubject.onNext(dict)
-        }
-
-        @objc func centralManager(_ central: CBCentralManager,
-                                  didDiscover peripheral: CBPeripheral,
-                                  advertisementData: [String: Any],
-                                  rssi: NSNumber) {
-            // swiftlint:disable:next line_length TODO: multiline string in Swift 4
-            RxBluetoothKitLog.d("\(central.logDescription) didDiscover(peripheral: \(peripheral.logDescription), rssi: \(rssi))")
-            didDiscoverPeripheralSubject.onNext((RxCBPeripheral(peripheral: peripheral), advertisementData, rssi))
-        }
-
-        @objc func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-            RxBluetoothKitLog.d("\(central.logDescription) didConnect(to: \(peripheral.logDescription))")
-            didConnectPerihperalSubject.onNext(RxCBPeripheral(peripheral: peripheral))
-        }
-
-        @objc func centralManager(_ central: CBCentralManager,
-                                  didFailToConnect peripheral: CBPeripheral,
-                                  error: Error?) {
-            // swiftlint:disable:next line_length TODO: multiline string in Swift 4
-            RxBluetoothKitLog.d("\(central.logDescription) didFailToConnect(to: \(peripheral.logDescription), error: \(String(describing: error)))")
-            didFailToConnectPeripheralSubject.onNext((RxCBPeripheral(peripheral: peripheral), error))
-        }
-
-        @objc func centralManager(_ central: CBCentralManager,
-                                  didDisconnectPeripheral peripheral: CBPeripheral,
-                                  error: Error?) {
-            // swiftlint:disable:next line_length TODO: multiline string in Swift 4
-            RxBluetoothKitLog.d("\(central.logDescription) didDisconnect(from: \(peripheral.logDescription), error: \(String(describing: error)))")
-            didDisconnectPeripheral.onNext((RxCBPeripheral(peripheral: peripheral), error))
-        }
-    }
-
-    /// Observable which informs when central manager did change its state
+    
     var rx_didUpdateState: Observable<BluetoothState> {
-        return internalDelegate.didUpdateStateSubject
+        return rx_delegate.methodInvoked(#selector(CBCentralManagerDelegate.centralManagerDidUpdateState(_:)))
+            .map({ a -> BluetoothState in
+                return a[1] as! BluetoothState
+            })
     }
-    /// Observable which informs when central manager is about to restore its state
-    var rx_willRestoreState: Observable<[String: Any]> {
-        return internalDelegate.willRestoreStateSubject
+    
+    var rx_willRestoreState: Observable<[String : Any]> {
+        return rx_delegate.methodInvoked(#selector(CBCentralManagerDelegate.centralManager(_:willRestoreState:)))
+            .map({ a -> [String: Any] in
+                return a[1] as! [String: Any]
+            })
     }
-    /// Observable which informs when central manage discovered peripheral
+    
     var rx_didDiscoverPeripheral: Observable<(RxPeripheralType, [String: Any], NSNumber)> {
-        return internalDelegate.didDiscoverPeripheralSubject
+        return rx_delegate.methodInvoked(#selector(CBCentralManagerDelegate.centralManager(_:didDiscover:advertisementData:rssi:)))
+            .map({ a -> (RxPeripheralType, [String: Any], NSNumber) in
+                return (a[1], a[2], a[3]) as! (RxPeripheralType, [String: Any], NSNumber)
+            })
     }
-    /// Observable which informs when central manager connected to peripheral
+    
     var rx_didConnectPeripheral: Observable<RxPeripheralType> {
-        return internalDelegate.didConnectPerihperalSubject
+        return rx_delegate.methodInvoked(#selector(CBCentralManagerDelegate.centralManager(_:didConnect:)))
+            .map({ a -> RxPeripheralType in
+                return a[1] as! RxPeripheralType
+            })
     }
-    /// Observable which informs when central manager failed to connect to peripheral
+    
     var rx_didFailToConnectPeripheral: Observable<(RxPeripheralType, Error?)> {
-        return internalDelegate.didFailToConnectPeripheralSubject
+        return rx_delegate.methodInvoked(#selector(CBCentralManagerDelegate.centralManager(_:didFailToConnect:error:)))
+            .map({ a -> (RxPeripheralType, Error?) in
+                return (a[1], a[2]) as! (RxPeripheralType, Error?)
+            })
     }
-    /// Observable which informs when central manager disconnected from peripheral
+    
     var rx_didDisconnectPeripheral: Observable<(RxPeripheralType, Error?)> {
-        return internalDelegate.didDisconnectPeripheral
+        return rx_delegate.methodInvoked(#selector(CBCentralManagerDelegate.centralManager(_:didDisconnectPeripheral:error:)))
+            .map({ a -> (RxPeripheralType, Error?) in
+                return (a[1], a[2]) as! (RxPeripheralType, Error?)
+            })
     }
-
-    /// Current central manager state
-    var state: BluetoothState {
-        return BluetoothState(rawValue: centralManager.state.rawValue) ?? .unsupported
+    
+//    var state: BluetoothState {
+//        return self.
+//        return rx_delegate.methodInvoked(#selector(
+//    }
+    
+    var centralManager: CBCentralManager {
+        return self
     }
-
-    /**
-     Start scanning for peripherals with specified services. Results will be available on rx_didDiscoverPeripheral
-     observable.
-
-     - parameter serviceUUIDs: Services which peripherals needs to implement. When nil is passed all
-     available peripherals will be discovered.
-     - parameter options: Central Manager specific options for scanning
-     */
-    func scanForPeripherals(withServices serviceUUIDs: [CBUUID]?, options: [String: Any]?) {
-        return centralManager.scanForPeripherals(withServices: serviceUUIDs, options: options)
+    
+    func connect(_ peripheral: RxPeripheralType, options: [String : Any]?) {
+        self.connect(peripheral.peripheral, options: options)
     }
-
-    /**
-     Connect to specified peripheral. If connection is successful peripheral will be emitted in rx_didConnectPeripheral
-     observable. In case of any error it will be emitted on rx_didFailToConnectPeripheral.
-
-     - parameter peripheral: Peripheral to connect to.
-     - parameter options: Central Manager specific connection options.
-     */
-    func connect(_ peripheral: RxPeripheralType, options: [String: Any]?) {
-        return centralManager.connect((peripheral as! RxCBPeripheral).peripheral, options: options)
-    }
-
-    /**
-     Cancel peripheral connection. If successful observable rx_didDisconnectPeripheral will emit disconnected
-     peripheral with NSError set to nil.
-
-     - parameter peripheral: Peripheral to be disconnected.
-     */
+    
     func cancelPeripheralConnection(_ peripheral: RxPeripheralType) {
-        return centralManager.cancelPeripheralConnection((peripheral as! RxCBPeripheral).peripheral)
+        self.cancelPeripheralConnection(peripheral.peripheral)
     }
-
-    /// Abort peripheral scanning
-    func stopScan() {
-        return centralManager.stopScan()
-    }
-
-    /**
-     Retrieve list of connected peripherals which implement specified services. Peripherals which meet criteria
-     will be emitted in by returned observable after subscription.
-
-     - parameter serviceUUIDs: List of services which need to be implemented by retrieved peripheral.
-     - returns: Observable wich emits connected peripherals.
-     */
+    
     func retrieveConnectedPeripherals(withServices serviceUUIDs: [CBUUID]) -> Observable<[RxPeripheralType]> {
-        return .just(centralManager.retrieveConnectedPeripherals(withServices: serviceUUIDs).map(RxCBPeripheral.init))
+        return Observable<[RxPeripheralType]>.of(
+            self.retrieveConnectedPeripherals(withServices: serviceUUIDs).map { $0 as! RxPeripheralType }
+        )
     }
-
-    /**
-     Retrieve peripherals with specified identifiers.
-
-     - parameter identifiers: List of identifiers of peripherals for which we are looking for.
-     - returns: Observable which emits peripherals with specified identifiers.
-     */
+    
     func retrievePeripherals(withIdentifiers identifiers: [UUID]) -> Observable<[RxPeripheralType]> {
-        return .just(centralManager.retrievePeripherals(withIdentifiers: identifiers).map(RxCBPeripheral.init))
+        return Observable<[RxPeripheralType]>.of(
+            self.retrievePeripherals(withIdentifiers: identifiers).map { $0 as! RxPeripheralType }
+        )
     }
+    
+    
 }

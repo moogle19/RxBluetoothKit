@@ -64,7 +64,7 @@ class RxCBPeripheral: RxPeripheralType {
 
     /// Peripheral's services
     var services: [RxServiceType]? {
-        return peripheral.services?.map(RxCBService.init)
+        return peripheral.services
     }
 
     /// Observable which emits peripheral's name changes
@@ -146,7 +146,7 @@ class RxCBPeripheral: RxPeripheralType {
      - parameter forService: Serivce which includes characteristics
      */
     func discoverCharacteristics(_ characteristicUUIDs: [CBUUID]?, for service: RxServiceType) {
-        peripheral.discoverCharacteristics(characteristicUUIDs, for: (service as! RxCBService).service)
+        peripheral.discoverCharacteristics(characteristicUUIDs, for: service as! CBService)
     }
 
     /**
@@ -158,7 +158,7 @@ class RxCBPeripheral: RxPeripheralType {
      - parameter forService: Service which contains included services.
      */
     func discoverIncludedServices(_ includedServiceUUIDs: [CBUUID]?, for service: RxServiceType) {
-        peripheral.discoverIncludedServices(includedServiceUUIDs, for: (service as! RxCBService).service)
+        peripheral.discoverIncludedServices(includedServiceUUIDs, for: service as! CBService)
     }
 
     /**
@@ -167,7 +167,7 @@ class RxCBPeripheral: RxPeripheralType {
      - parameter characteristic: Characteristic from which we are reading
      */
     func readValue(for characteristic: RxCharacteristicType) {
-        peripheral.readValue(for: (characteristic as! RxCBCharacteristic).characteristic)
+        peripheral.readValue(for: characteristic as! CBCharacteristic)
     }
 
     /**
@@ -180,7 +180,7 @@ class RxCBPeripheral: RxPeripheralType {
     func writeValue(_ data: Data,
                     for characteristic: RxCharacteristicType,
                     type: CBCharacteristicWriteType) {
-            peripheral.writeValue(data, for: (characteristic as! RxCBCharacteristic).characteristic,
+            peripheral.writeValue(data, for: characteristic as! CBCharacteristic,
                 type: type)
     }
 
@@ -190,7 +190,7 @@ class RxCBPeripheral: RxPeripheralType {
      - parameter forCharacteristic: Characteristic for which notifications will be enabled or disabled
      */
     func setNotifyValue(_ enabled: Bool, for characteristic: RxCharacteristicType) {
-        peripheral.setNotifyValue(enabled, for: (characteristic as! RxCBCharacteristic).characteristic)
+        peripheral.setNotifyValue(enabled, for: characteristic as! CBCharacteristic)
     }
 
     /**
@@ -200,7 +200,7 @@ class RxCBPeripheral: RxPeripheralType {
      - parameter characteristic: Characteristic for which descriptors will be discovered
      */
     func discoverDescriptors(for characteristic: RxCharacteristicType) {
-        peripheral.discoverDescriptors(for: (characteristic as! RxCBCharacteristic).characteristic)
+        peripheral.discoverDescriptors(for: characteristic as! CBCharacteristic)
     }
 
     /**
@@ -210,7 +210,7 @@ class RxCBPeripheral: RxPeripheralType {
      - parameter descriptor: Descriptor which value will be read.
      */
     func readValue(for descriptor: RxDescriptorType) {
-        peripheral.readValue(for: (descriptor as! RxCBDescriptor).descriptor)
+        peripheral.readValue(for: descriptor as! CBDescriptor)
     }
 
     /*!
@@ -266,7 +266,7 @@ class RxCBPeripheral: RxPeripheralType {
         @objc func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
             // swiftlint:disable:next line_length TODO: multiline string in Swift 4
             RxBluetoothKitLog.d("\(peripheral.logDescription) didModifyServices(services: [\(invalidatedServices.logDescription))]")
-            peripheralDidModifyServicesSubject.onNext(invalidatedServices.map(RxCBService.init))
+            peripheralDidModifyServicesSubject.onNext(invalidatedServices)
         }
 
         @objc func peripheral(_ peripheral: CBPeripheral, didReadRSSI rssi: NSNumber, error: Error?) {
@@ -278,75 +278,76 @@ class RxCBPeripheral: RxPeripheralType {
         @objc func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
             // swiftlint:disable:next line_length TODO: multiline string in Swift 4
             RxBluetoothKitLog.d("\(peripheral.logDescription) didDiscoverServices(services: \(String(describing: peripheral.services?.logDescription)), error: \(String(describing: error)))")
-            peripheralDidDiscoverServicesSubject.onNext((peripheral.services?.map(RxCBService.init), error))
+            peripheralDidDiscoverServicesSubject.onNext((peripheral.services, error))
         }
 
         @objc func peripheral(_ peripheral: CBPeripheral,
                               didDiscoverIncludedServicesFor service: CBService,
                               error: Error?) {
             // swiftlint:disable:next line_length TODO: multiline string in Swift 4
-            RxBluetoothKitLog.d("\(peripheral.logDescription) didDiscoverIncludedServices(for:\(service.logDescription), includedServices: \(String(describing: service.includedServices?.logDescription)), error: \(String(describing: error)))")
-            peripheralDidDiscoverIncludedServicesForServiceSubject.onNext((RxCBService(service: service), error))
+//            RxBluetoothKitLog.d("\(peripheral.logDescription) didDiscoverIncludedServices(for:\(service.logDescription), includedServices: \(String(describing: service.includedServices?.logDescription)), error: \(String(describing: error)))")
+            peripheralDidDiscoverIncludedServicesForServiceSubject
+                .onNext((service, error))
         }
 
         @objc func peripheral(_ peripheral: CBPeripheral,
                               didDiscoverCharacteristicsFor service: CBService,
                               error: Error?) {
             // swiftlint:disable:next line_length TODO: multiline string in Swift 4
-            RxBluetoothKitLog.d("\(peripheral.logDescription) didDiscoverCharacteristicsFor(for:\(service.logDescription), characteristics: \(String(describing: service.characteristics?.logDescription)), error: \(String(describing: error)))")
-            peripheralDidDiscoverCharacteristicsForServiceSubject.onNext((RxCBService(service: service), error))
+//            RxBluetoothKitLog.d("\(peripheral.logDescription) didDiscoverCharacteristicsFor(for:\(service.logDescription), characteristics: \(String(describing: service.characteristics?.logDescription)), error: \(String(describing: error)))")
+            peripheralDidDiscoverCharacteristicsForServiceSubject.onNext((service, error))
         }
 
         @objc func peripheral(_ peripheral: CBPeripheral,
                               didUpdateValueFor characteristic: CBCharacteristic,
                               error: Error?) {
             // swiftlint:disable:next line_length TODO: multiline string in Swift 4
-            RxBluetoothKitLog.d("\(peripheral.logDescription) didUpdateValueFor(for:\(characteristic.logDescription), value: \(String(describing: characteristic.value?.logDescription)), error: \(String(describing: error)))")
+//            RxBluetoothKitLog.d("\(peripheral.logDescription) didUpdateValueFor(for:\(characteristic.logDescription), value: \(String(describing: characteristic.value?.logDescription)), error: \(String(describing: error)))")
             peripheralDidUpdateValueForCharacteristicSubject
-                .onNext((RxCBCharacteristic(characteristic: characteristic), error))
+                .onNext((characteristic, error))
         }
 
         @objc func peripheral(_ peripheral: CBPeripheral,
                               didWriteValueFor characteristic: CBCharacteristic,
                               error: Error?) {
             // swiftlint:disable:next line_length TODO: multiline string in Swift 4
-            RxBluetoothKitLog.d("\(peripheral.logDescription) didWriteValueFor(for:\(characteristic.logDescription), value: \(String(describing: characteristic.value?.logDescription)), error: \(String(describing: error)))")
+//            RxBluetoothKitLog.d("\(peripheral.logDescription) didWriteValueFor(for:\(characteristic.logDescription), value: \(String(describing: characteristic.value?.logDescription)), error: \(String(describing: error)))")
             peripheralDidWriteValueForCharacteristicSubject
-                .onNext((RxCBCharacteristic(characteristic: characteristic), error))
+                .onNext((characteristic: characteristic, error))
         }
 
         @objc func peripheral(_ peripheral: CBPeripheral,
                               didUpdateNotificationStateFor characteristic: CBCharacteristic,
                               error: Error?) {
             // swiftlint:disable:next line_length TODO: multiline string in Swift 4
-            RxBluetoothKitLog.d("\(peripheral.logDescription) didUpdateNotificationStateFor(for:\(characteristic.logDescription), isNotifying: \(characteristic.isNotifying), error: \(String(describing: error)))")
+//            RxBluetoothKitLog.d("\(peripheral.logDescription) didUpdateNotificationStateFor(for:\(characteristic.logDescription), isNotifying: \(characteristic.isNotifying), error: \(String(describing: error)))")
             peripheralDidUpdateNotificationStateForCharacteristicSubject
-                .onNext((RxCBCharacteristic(characteristic: characteristic), error))
+                .onNext((characteristic, error))
         }
 
         @objc func peripheral(_ peripheral: CBPeripheral,
                               didDiscoverDescriptorsFor characteristic: CBCharacteristic,
                               error: Error?) {
             // swiftlint:disable:next line_length TODO: multiline string in Swift 4
-            RxBluetoothKitLog.d("\(peripheral.logDescription) didDiscoverDescriptorsFor(for:\(characteristic.logDescription), descriptors: \(String(describing: characteristic.descriptors?.logDescription)), error: \(String(describing: error)))")
+//            RxBluetoothKitLog.d("\(peripheral.logDescription) didDiscoverDescriptorsFor(for:\(characteristic.logDescription), descriptors: \(String(describing: characteristic.descriptors?.logDescription)), error: \(String(describing: error)))")
             peripheralDidDiscoverDescriptorsForCharacteristicSubject
-                .onNext((RxCBCharacteristic(characteristic: characteristic), error))
+                .onNext((characteristic, error))
         }
 
         @objc func peripheral(_ peripheral: CBPeripheral,
                               didUpdateValueFor descriptor: CBDescriptor,
                               error: Error?) {
             // swiftlint:disable:next line_length TODO: multiline string in Swift 4
-            RxBluetoothKitLog.d("\(peripheral.logDescription) didUpdateValueFor(for:\(descriptor.logDescription), value: \(String(describing: descriptor.value)), error: \(String(describing: error)))")
-                peripheralDidUpdateValueForDescriptorSubject.onNext((RxCBDescriptor(descriptor: descriptor), error))
+//            RxBluetoothKitLog.d("\(peripheral.logDescription) didUpdateValueFor(for:\(descriptor.logDescription), value: \(String(describing: descriptor.value)), error: \(String(describing: error)))")
+                peripheralDidUpdateValueForDescriptorSubject.onNext((descriptor, error))
         }
 
         @objc func peripheral(_ peripheral: CBPeripheral,
                               didWriteValueFor descriptor: CBDescriptor,
                               error: Error?) {
             // swiftlint:disable:next line_length TODO: multiline string in Swift 4
-            RxBluetoothKitLog.d("\(peripheral.logDescription) didWriteValueFor(for:\(descriptor.logDescription), error: \(String(describing: error)))")
-                peripheralDidWriteValueForDescriptorSubject.onNext((RxCBDescriptor(descriptor: descriptor), error))
+//            RxBluetoothKitLog.d("\(peripheral.logDescription) didWriteValueFor(for:\(descriptor.logDescription), error: \(String(describing: error)))")
+                peripheralDidWriteValueForDescriptorSubject.onNext((descriptor, error))
         }
     }
 

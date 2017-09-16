@@ -47,7 +47,7 @@ protocol RxCentralManagerType {
     var rx_didDisconnectPeripheral: Observable<(RxPeripheralType, Error?)> { get }
 
     /// Current state of Central Manager
-    var state: BluetoothState { get }
+//    var state: BluetoothState { get }
 
     /// Underlying `CBPeripheral` instance
     var centralManager: CBCentralManager { get }

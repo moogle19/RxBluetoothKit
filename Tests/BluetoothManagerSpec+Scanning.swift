@@ -68,18 +68,18 @@ class BluetoothManagerScanningSpec: QuickSpec {
             // .Unknown,
             // .Unsupported
             for (cberror, bleerror) in BluetoothError.invalidStateErrors {
-                context("when bluetooth manager has state: \(bleerror) and user is subscribed for scanning") {
-                    beforeEach {
-                        fakeCentralManager.state = cberror
-                        scanObservers.append(testScheduler.scheduleObservable {manager.scanForPeripherals(withServices: nil)})
-                        testScheduler.advanceTo(scanObservers[0].subscribeTime)
-                    }
-                    
-                    it("should return only an error") {
-                        expect(scanObservers[0].events.count).to(equal(1))
-                        expectError(event: scanObservers[0].events[0].value, errorType: bleerror)
-                    }
-                }
+//                context("when bluetooth manager has state: \(bleerror) and user is subscribed for scanning") {
+//                    beforeEach {
+//                        fakeCentralManager.state = cberror
+//                        scanObservers.append(testScheduler.scheduleObservable {manager.scanForPeripherals(withServices: nil)})
+//                        testScheduler.advanceTo(scanObservers[0].subscribeTime)
+//                    }
+//                    
+//                    it("should return only an error") {
+//                        expect(scanObservers[0].events.count).to(equal(1))
+//                        expectError(event: scanObservers[0].events[0].value, errorType: bleerror)
+//                    }
+//                }
                 
                 context("when bluetooth changes state to: \(bleerror) during scanning of services") {
                     let firstScanTime = 550
@@ -94,9 +94,7 @@ class BluetoothManagerScanningSpec: QuickSpec {
                         
                         fakeCentralManager.rx_didUpdateState = testScheduler.createHotObservable(errors).asObservable()
                         fakeCentralManager.rx_didDiscoverPeripheral = testScheduler.createHotObservable(
-                            [Recorded(time: firstScanTime, value: .next(FakePeripheral() as RxPeripheralType,
-                                                                        [String: Any](),
-                                                                        NSNumber(value: 0)))]).asObservable()
+                            [Recorded<Event<(RxPeripheralType, [String: Any], NSNumber)>>(time: firstScanTime, value: Event.next((FakePeripheral() as RxPeripheralType, [String: Any](), NSNumber(value: 0))))]).asObservable()
                     }
                     
                     context("when first device is scanned") {
@@ -153,9 +151,14 @@ class BluetoothManagerScanningSpec: QuickSpec {
                         let rssi = Double(i) * 10
                         recordsTime.append(time)
                         recordsRSSI.append(rssi)
-                        scans.append(Recorded(time: time, value: .next(FakePeripheral() as RxPeripheralType,
-                                                                       [String: Any](),
-                                                                       NSNumber(value: rssi))))
+                        scans
+                            .append(
+                                Recorded<Event<(RxPeripheralType, [String: Any], NSNumber)>>(time: time, value: Event.next((FakePeripheral() as RxPeripheralType, [String: Any](), NSNumber(value: rssi)))))
+//                                Recorded<Event<(RxPeripheralType, [String : Any], NSNumber)>>(
+//                                    time: time,
+//                                    value: .next(FakePeripheral(),
+//                                                                       [String: Any](),
+//                                                                       NSNumber(value: rssi))))
                     }
                     
                     let scansObservable = testScheduler.createHotObservable(scans)

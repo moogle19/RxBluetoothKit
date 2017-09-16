@@ -24,33 +24,20 @@ import Foundation
 import CoreBluetooth
 import RxSwift
 
-class RxCBService: RxServiceType {
-
-    let service: CBService
-    init(service: CBService) {
-        self.service = service
-    }
-
-    @available(*, deprecated)
-    var objectId: UInt {
-        return UInt(bitPattern: ObjectIdentifier(service))
-    }
-
-    var uuid: CBUUID {
-        return service.uuid
-    }
+extension CBService: RxServiceType {
     var characteristics: [RxCharacteristicType]? {
-        return service.characteristics?.map(RxCBCharacteristic.init)
+        return self.characteristics
     }
+    
     var includedServices: [RxServiceType]? {
-        return service.includedServices?.map(RxCBService.init)
+        return self.includedServices
     }
-    var isPrimary: Bool {
-        return service.isPrimary
-    }
-
+    
     func isEqualTo(service: RxServiceType) -> Bool {
-        guard let rhs = service as? RxCBService else { return false }
-        return self.service === rhs.service
+        return self == service
+    }
+    
+    var objectId: UInt {
+        return UInt(bitPattern: ObjectIdentifier(self))
     }
 }

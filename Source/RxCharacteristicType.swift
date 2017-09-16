@@ -51,7 +51,7 @@ protocol RxCharacteristicType {
     var service: RxServiceType { get }
 
     /// True if the two characteristic objects considered equal
-    func isEqualTo(characteristic: RxCharacteristicType) -> Bool
+     func isEqualTo(characteristic: RxCharacteristicType) -> Bool
 }
 
 extension Equatable where Self: RxCharacteristicType {}

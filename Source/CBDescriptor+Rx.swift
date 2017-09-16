@@ -22,41 +22,45 @@
 
 import Foundation
 import CoreBluetooth
-import RxSwift
 
-class RxCBCharacteristic: RxCharacteristicType {
+extension CBDescriptor: RxDescriptorType {
+    var characteristic: RxCharacteristicType {
+        return self.characteristic
+    }
+    
+    func isEqualTo(descriptor: RxDescriptorType) -> Bool {
+        return self == descriptor
+    }
+    
+    var objectId: UInt {
+        return UInt(bitPattern: ObjectIdentifier(self))
+    }
+}
 
-    let characteristic: CBCharacteristic
+class RxCBDescriptor: RxDescriptorType {
 
-    init(characteristic: CBCharacteristic) {
-        self.characteristic = characteristic
+    let descriptor: CBDescriptor
+
+    init(descriptor: CBDescriptor) {
+        self.descriptor = descriptor
     }
 
     @available(*, deprecated)
     var objectId: UInt {
-        return UInt(bitPattern: ObjectIdentifier(characteristic))
+        return UInt(bitPattern: ObjectIdentifier(descriptor))
     }
     var uuid: CBUUID {
-        return characteristic.uuid
+        return descriptor.uuid
     }
-    var value: Data? {
-        return characteristic.value
+    var characteristic: RxCharacteristicType {
+        return descriptor.characteristic
     }
-    var isNotifying: Bool {
-        return characteristic.isNotifying
-    }
-    var properties: CBCharacteristicProperties {
-        return characteristic.properties
-    }
-    var descriptors: [RxDescriptorType]? {
-        return characteristic.descriptors?.map(RxCBDescriptor.init)
-    }
-    var service: RxServiceType {
-        return RxCBService(service: characteristic.service)
+    var value: Any? {
+        return descriptor.value
     }
 
-    func isEqualTo(characteristic: RxCharacteristicType) -> Bool {
-        guard let rhs = characteristic as? RxCBCharacteristic else { return false }
-        return self.characteristic === rhs.characteristic
+    func isEqualTo(descriptor: RxDescriptorType) -> Bool {
+        guard let rhs = descriptor as? RxCBDescriptor else { return false }
+        return self.descriptor === rhs.descriptor
     }
 }
